@@ -13,27 +13,34 @@ public class leercsv {
             boolean isFirstLine = true;
             while ((line = br.readLine()) != null) {
                 if (isFirstLine) {
-                    isFirstLine = false;  // Skip the header line
+                    isFirstLine = false;  // Saltar la línea de encabezado
                     continue;
                 }
                 String[] fields = line.split(",");
-                String name = fields[0];
-                int pokedexNumber = Integer.parseInt(fields[1]);
-                String type1 = fields[2];
-                String type2 = fields[3].isEmpty() ? null : fields[3];
-                String classification = fields[4];
-                double height = Double.parseDouble(fields[5]);
-                double weight = Double.parseDouble(fields[6]);
-                List<String> abilities = Arrays.asList(fields[7].split(","));
-                int generation = Integer.parseInt(fields[8]);
-                boolean isLegendary = fields[9].equalsIgnoreCase("Yes");
+                if (fields.length < 10) {
+                    System.err.println("Línea incorrecta en el CSV: " + line);
+                    continue;
+                }
+                String name = fields[0].trim();
+                int pokedexNumber = Integer.parseInt(fields[1].trim());
+                String type1 = fields[2].trim();
+                String type2 = fields[3].trim().isEmpty() ? null : fields[3].trim();
+                String classification = fields[4].trim();
+                double height = Double.parseDouble(fields[5].trim());
+                double weight = Double.parseDouble(fields[6].trim());
+                List<String> abilities = Arrays.asList(fields[7].replaceAll("\"", "").trim().split("\\s*,\\s*"));
+                int generation = Integer.parseInt(fields[8].trim());
+                boolean isLegendary = fields[9].trim().equalsIgnoreCase("Yes");
 
                 Pokemon pokemon = new Pokemon(name, pokedexNumber, type1, type2, classification, height, weight, abilities, generation, isLegendary);
                 pokemonMap.put(name, pokemon);
             }
         } catch (IOException e) {
             System.err.println("Error leyendo el archivo: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.err.println("Error en el formato numérico: " + e.getMessage());
         }
     }
 }
+
 

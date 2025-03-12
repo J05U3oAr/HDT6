@@ -10,6 +10,7 @@ public class usospokemon {
     }
 
     public void addUserPokemon(String name) {
+        name = name.trim().toLowerCase();
         if (!allPokemons.containsKey(name)) {
             System.out.println("Error: Pokémon no encontrado.");
             return;
@@ -19,15 +20,19 @@ public class usospokemon {
             return;
         }
         userCollection.put(name, allPokemons.get(name));
+        System.out.println(name + " agregado a la colección.");
     }
+    
 
     public void showPokemonData(String name) {
+        name = name.trim().toLowerCase(); // Convertimos a minúsculas antes de buscar
         if (allPokemons.containsKey(name)) {
-            System.out.println(allPokemons.get(name));
+            System.out.println(allPokemons.get(name).datospokemon());
         } else {
             System.out.println("Error: Pokémon no encontrado.");
         }
     }
+    
 
     public void showUserCollectionByType1() {
         userCollection.values().stream()
@@ -42,8 +47,9 @@ public class usospokemon {
     }
 
     public void showPokemonsByAbility(String ability) {
+        final String trimmedAbility = ability.trim();
         allPokemons.values().stream()
-            .filter(pokemon -> pokemon.getAbilities().contains(ability))
+            .filter(pokemon -> pokemon.getAbilities() != null && pokemon.getAbilities().stream().anyMatch(a -> a.trim().equalsIgnoreCase(trimmedAbility)))
             .forEach(pokemon -> System.out.println(pokemon.getName()));
     }
 }
