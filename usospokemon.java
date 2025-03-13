@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class usospokemon {
     private Map<String, Pokemon> allPokemons;
@@ -9,47 +10,135 @@ public class usospokemon {
         this.userCollection = userCollection;
     }
 
+    /**
+     * Añade un Pokemon a la colección del usuario
+     */
     public void addUserPokemon(String name) {
-        name = name.trim().toLowerCase();
-        if (!allPokemons.containsKey(name)) {
-            System.out.println("Error: Pokémon no encontrado.");
+        // Intentar encontrar el Pokémon sin importar mayúsculas/minúsculas
+        String normalizedName = name.trim();
+        Pokemon pokemon = findPokemon(normalizedName);
+        
+        if (pokemon == null) {
+            System.out.println("Error: Pokémon '" + normalizedName + "' no encontrado.");
             return;
         }
-        if (userCollection.containsKey(name)) {
-            System.out.println("Error: Pokémon ya en la colección del usuario.");
+        
+        String originalName = pokemon.getName();
+        
+        // Verificar si ya existe en la colección del usuario
+        if (isInUserCollection(pokemon)) {
+            System.out.println("Error: '" + originalName + "' ya está en tu colección.");
             return;
         }
-        userCollection.put(name, allPokemons.get(name));
-        System.out.println(name + " agregado a la colección.");
+        
+        // Añadir a la colección del usuario
+        userCollection.put(originalName, pokemon);
+        System.out.println("'" + originalName + "' ha sido agregado a tu colección.");
     }
     
-
-    public void showPokemonData(String name) {
-        name = name.trim().toLowerCase(); // Convertimos a minúsculas antes de buscar
+    /**
+     * Busca un Pokémon sin importar mayúsculas/minúsculas
+     */
+    private Pokemon findPokemon(String name) {
+        // Buscar por nombre exacto primero
         if (allPokemons.containsKey(name)) {
-            System.out.println(allPokemons.get(name).datospokemon());
+            return allPokemons.get(name);
+        }
+        
+        // Luego buscar por nombre en minúsculas
+        String lowerName = name.toLowerCase();
+        if (allPokemons.containsKey(lowerName)) {
+            return allPokemons.get(lowerName);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Verifica si un Pokémon ya está en la colección del usuario
+     */
+    private boolean isInUserCollection(Pokemon pokemon) {
+        String name = pokemon.getName();
+        String lowerName = name.toLowerCase();
+        
+        return userCollection.containsKey(name) || userCollection.containsKey(lowerName);
+    }
+    
+    /**
+     * Muestra los datos de un Pokémon específico
+     */
+    public void showPokemonData(String name) {
+        Pokemon pokemon = findPokemon(name.trim());
+        
+        if (pokemon != null) {
+            System.out.println(pokemon.datospokemon());
         } else {
-            System.out.println("Error: Pokémon no encontrado.");
+            System.out.println("Error: Pokémon '" + name + "' no encontrado.");
         }
     }
     
-
+    /**
+     * Muestra la colección del usuario ordenada por Tipo 1
+     */
     public void showUserCollectionByType1() {
+        if (userCollection.isEmpty()) {
+            System.out.println("Tu colección está vacía.");
+            return;
+        }
+        
+        // Evitamos duplicados y ordenamos por tipo1
         userCollection.values().stream()
+            .distinct()  // Elimina duplicados
             .sorted(Comparator.comparing(Pokemon::getType1))
             .forEach(pokemon -> System.out.println(pokemon.getName() + " - " + pokemon.getType1()));
     }
-
+    
+    /**
+     * Muestra todos los Pokémon ordenados por Tipo 1
+     */
     public void showAllByType1() {
+        // Eliminar duplicados (nombres en minúsculas) y ordenar por tipo1
         allPokemons.values().stream()
+            .collect(Collectors.toMap(
+                Pokemon::getName,  // Clave: nombre original
+                pokemon -> pokemon,  // Valor: objeto Pokemon
+                (existing, replacement) -> existing  // En caso de colisión, mantener el existente
+            ))
+            .values().stream()
             .sorted(Comparator.comparing(Pokemon::getType1))
             .forEach(pokemon -> System.out.println(pokemon.getName() + " - " + pokemon.getType1()));
     }
-
+    
+    /**
+     * Muestra Pokémon que tienen una habilidad específica
+     */
     public void showPokemonsByAbility(String ability) {
-        final String trimmedAbility = ability.trim();
-        allPokemons.values().stream()
-            .filter(pokemon -> pokemon.getAbilities() != null && pokemon.getAbilities().stream().anyMatch(a -> a.trim().equalsIgnoreCase(trimmedAbility)))
-            .forEach(pokemon -> System.out.println(pokemon.getName()));
+        if (ability == null || ability.trim().isEmpty()) {
+            System.out.println("Debes ingresar una habilidad válida.");
+            return;
+        }
+        
+        String normalizedAbility = ability.trim().toLowerCase();
+        Set<String> displayedNames = new HashSet<>();  // Para evitar duplicados
+        boolean found = false;
+        
+        // Buscar Pokémon con la habilidad especificada
+        for (Pokemon pokemon : allPokemons.values()) {
+            if (pokemon.getAbilities() != null) {
+                for (String pokemonAbility : pokemon.getAbilities()) {
+                    if (pokemonAbility.toLowerCase().contains(normalizedAbility) && 
+                        !displayedNames.contains(pokemon.getName())) {
+                        System.out.println(pokemon.getName());
+                        displayedNames.add(pokemon.getName());
+                        found = true;
+                        break;  // Evitar mostrar el mismo Pokémon varias veces
+                    }
+                }
+            }
+        }
+        
+        if (!found) {
+            System.out.println("No se encontraron Pokémon con la habilidad: " + ability);
+        }
     }
 }

@@ -2,11 +2,12 @@ import java.util.*;
 import java.io.File;
 
 public class Main {
+    @SuppressWarnings("resource")
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // Usando la versión simplificada de MapFactory
-        Map<String, Pokemon> allPokemons = MapFactory.getMap();
-        Map<String, Pokemon> userCollection = MapFactory.getMap();
+        // Crear los mapas directamente en lugar de usar MapFactory
+        Map<String, Pokemon> allPokemons = new HashMap<>();
+        Map<String, Pokemon> userCollection = new HashMap<>();
 
         // Ruta al archivo CSV
         String filePath = "pokemon_data_pokeapi.csv";
@@ -42,7 +43,10 @@ public class Main {
 
         usospokemon usospokemon = new usospokemon(allPokemons, userCollection);
 
-        while (true) {
+        // Variable para controlar el bucle del menú
+        boolean running = true;
+        
+        while (running) {
             System.out.println("\nSelecciona una opción:");
             System.out.println("1. Agregar Pokémon a la colección del usuario");
             System.out.println("2. Mostrar datos de un Pokémon");
@@ -87,11 +91,13 @@ public class Main {
                     break;
                 case 6:
                     System.out.println("Saliendo...");
-                    scanner.close();
-                    return;
+                    running = false;  // Cambiamos el valor para salir del bucle
+                    break;
                 default:
                     System.out.println("Opción no válida. Intenta de nuevo.");
             }
         }
+        
+        scanner.close();  // Cerramos el scanner al final del programa
     }
 }

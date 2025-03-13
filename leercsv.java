@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,59 +19,141 @@ public class leercsv {
                     isFirstLine = false;  // Saltar la línea de encabezado
                     continue;
                 }
-                String[] fields = line.split(",");
+                
+                // Dividir la línea en campos, manejando casos especiales
+                String[] fields = parseCsvLine(line);
+                
                 if (fields.length < 10) {
-                    System.err.println("Línea incorrecta en el CSV: " + line);
+                    System.err.println("Línea incorrecta en el CSV (campos insuficientes): " + line);
                     continue;
                 }
+                
                 try {
-                    // Preservamos el nombre original con mayúsculas tal como está en el CSV
-                    String originalName = fields[0].trim();
+                    // Procesamos los campos con manejo de errores mejorado
+                    String name = fields[0].trim();
                     
-                    int pokedexNumber = Integer.parseInt(fields[1].trim());
+                    if (name.isEmpty()) {
+                        System.err.println("Nombre de Pokémon vacío en línea: " + line);
+                        continue;
+                    }
+                    
+                    int pokedexNumber;
+                    try {
+                        pokedexNumber = Integer.parseInt(fields[1].trim());
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error en número Pokédex, ignorando línea: " + line);
+                        continue;
+                    }
+                    
                     String type1 = fields[2].trim();
-                    String type2 = fields[3].trim().isEmpty() ? null : fields[3].trim();
+                    if (type1.isEmpty()) {
+                        type1 = "Unknown"; // Valor por defecto
+                    }
+                    
+                    String type2 = fields[3].trim();
+                    if (type2.isEmpty()) {
+                        type2 = null;
+                    }
+                    
                     String classification = fields[4].trim();
-                    double height = Double.parseDouble(fields[5].trim());
-                    double weight = Double.parseDouble(fields[6].trim());
-                    List<String> abilities = Arrays.asList(fields[7].replaceAll("\"", "").trim().split("\\s*,\\s*"));
-                    int generation = Integer.parseInt(fields[8].trim());
+                    
+                    double height;
+                    try {
+                        height = Double.parseDouble(fields[5].trim());
+                    } catch (NumberFormatException e) {
+                        height = 0.0; // Valor por defecto
+                    }
+                    
+                    double weight;
+                    try {
+                        weight = Double.parseDouble(fields[6].trim());
+                    } catch (NumberFormatException e) {
+                        weight = 0.0; // Valor por defecto
+                    }
+                    
+                    // Procesar habilidades
+                    String abilitiesString = fields[7].trim();
+                    List<String> abilities;
+                    
+                    // Eliminar comillas si las hay
+                    if (abilitiesString.startsWith("\"") && abilitiesString.endsWith("\"")) {
+                        abilitiesString = abilitiesString.substring(1, abilitiesString.length() - 1);
+                    }
+                    
+                    // Separar por comas
+                    abilities = new ArrayList<>(Arrays.asList(abilitiesString.split("\\s*,\\s*")));
+                    
+                    int generation;
+                    try {
+                        generation = Integer.parseInt(fields[8].trim());
+                    } catch (NumberFormatException e) {
+                        generation = 1; // Valor por defecto
+                    }
+                    
                     boolean isLegendary = fields[9].trim().equalsIgnoreCase("Yes");
 
-                    Pokemon pokemon = new Pokemon(originalName, pokedexNumber, type1, type2, classification, height, weight, abilities, generation, isLegendary);
+                    // Crear el Pokémon
+                    Pokemon pokemon = new Pokemon(name, pokedexNumber, type1, type2, classification, 
+                                                 height, weight, abilities, generation, isLegendary);
                     
-                    // Guardamos el Pokémon tanto con su nombre original como con su nombre en minúsculas
-                    pokemonMap.put(originalName, pokemon);
+                    // Guardamos el Pokémon con su nombre original
+                    pokemonMap.put(name, pokemon);
                     
-                    // También lo guardamos con versión en minúsculas para facilitar búsquedas insensibles a mayúsculas
-                    String lowerCaseName = originalName.toLowerCase();
-                    if (!originalName.equals(lowerCaseName)) {
+                    // También con su nombre en minúsculas para buscar sin sensibilidad a mayúsculas
+                    String lowerCaseName = name.toLowerCase();
+                    if (!name.equals(lowerCaseName)) {
                         pokemonMap.put(lowerCaseName, pokemon);
                     }
                     
                     count++;
                     
-                    // Debug para ver los primeros 5 Pokémon cargados
+                    // Mostrar los primeros 5 para debug
                     if (count <= 5) {
-                        System.out.println("Cargado: '" + originalName + "'");
+                        System.out.println("Cargado: '" + name + "'");
                     }
-                } catch (NumberFormatException e) {
-                    System.err.println("Error en el formato numérico en línea: " + line);
-                    System.err.println("Mensaje de error: " + e.getMessage());
+                    
                 } catch (Exception e) {
                     System.err.println("Error procesando línea: " + line);
-                    System.err.println("Mensaje de error: " + e.getMessage());
+                    System.err.println("Error: " + e.getMessage());
                 }
             }
-            System.out.println("Total de Pokémon cargados: " + count + " (Tamaño del mapa: " + pokemonMap.size() + ")");
+            
+            System.out.println("Total de Pokémon cargados: " + count);
+            System.out.println("Tamaño del mapa: " + pokemonMap.size());
             
             if (pokemonMap.isEmpty()) {
                 System.err.println("¡ADVERTENCIA! No se cargó ningún Pokémon. Verifica la ruta y formato del archivo: " + filePath);
             }
+            
         } catch (IOException e) {
             System.err.println("Error leyendo el archivo: " + e.getMessage());
             System.err.println("Ruta del archivo: " + filePath);
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Divide una línea CSV manejando comillas correctamente
+     */
+    private static String[] parseCsvLine(String line) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuotes = false;
+        
+        for (char c : line.toCharArray()) {
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                tokens.add(sb.toString());
+                sb = new StringBuilder();
+            } else {
+                sb.append(c);
+            }
+        }
+        
+        // No olvidar el último token
+        tokens.add(sb.toString());
+        
+        return tokens.toArray(new String[0]);
     }
 }
