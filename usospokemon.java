@@ -96,6 +96,7 @@ public class usospokemon {
     /**
      * Muestra todos los Pokémon ordenados por Tipo 1
      */
+    @SuppressWarnings("unused")
     public void showAllByType1() {
         // Eliminar duplicados (nombres en minúsculas) y ordenar por tipo1
         allPokemons.values().stream()
