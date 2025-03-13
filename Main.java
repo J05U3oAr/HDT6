@@ -1,19 +1,44 @@
 import java.util.*;
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Map<String, Pokemon> allPokemons = MapFactory.getMap(MapFactory.MapType.HASHMAP);
-        Map<String, Pokemon> userCollection = MapFactory.getMap(MapFactory.MapType.HASHMAP);
+        // Usando la versión simplificada de MapFactory
+        Map<String, Pokemon> allPokemons = MapFactory.getMap();
+        Map<String, Pokemon> userCollection = MapFactory.getMap();
 
         // Ruta al archivo CSV
-String filePath = "pokemon_data_pokeapi.csv";
+        String filePath = "pokemon_data_pokeapi.csv";
+        File file = new File(filePath);
+        
+        // Verificar si el archivo existe
+        if (!file.exists()) {
+            System.err.println("ERROR: El archivo '" + filePath + "' no existe.");
+            System.err.println("Ruta absoluta esperada: " + file.getAbsolutePath());
+            System.out.println("\nPor favor, verifica la ruta del archivo CSV e intenta de nuevo.");
+            return;
+        }
+        
+        System.out.println("Cargando datos de Pokémon desde: " + filePath);
         leercsv.loadPokemonData(filePath, allPokemons);
-        System.out.println("Pokémon cargados en el sistema:");
-for (String key : allPokemons.keySet()) {
-    System.out.println("- '" + key + "'");
-}
-
+        
+        if (allPokemons.isEmpty()) {
+            System.err.println("No se pudo cargar ningún Pokémon. El programa no puede continuar.");
+            return;
+        }
+        
+        System.out.println("Pokémon cargados en el sistema: " + allPokemons.size());
+        System.out.println("Primeros 5 Pokémon disponibles:");
+        int count = 0;
+        for (String key : allPokemons.keySet()) {
+            if (count < 5) {
+                System.out.println("- '" + key + "'");
+                count++;
+            } else {
+                break;
+            }
+        }
 
         usospokemon usospokemon = new usospokemon(allPokemons, userCollection);
 
@@ -25,8 +50,16 @@ for (String key : allPokemons.keySet()) {
             System.out.println("4. Mostrar todos los Pokémon existentes ordenados por tipo1");
             System.out.println("5. Mostrar Pokémon por habilidad");
             System.out.println("6. Salir");
-            int option = scanner.nextInt();
-            scanner.nextLine();  // Limpiar el buffer
+            
+            int option;
+            try {
+                option = scanner.nextInt();
+                scanner.nextLine();  // Limpiar el buffer
+            } catch (InputMismatchException e) {
+                System.out.println("Por favor, ingresa un número válido.");
+                scanner.nextLine();  // Limpiar el buffer
+                continue;
+            }
 
             switch (option) {
                 case 1:

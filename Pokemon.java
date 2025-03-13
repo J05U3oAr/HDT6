@@ -68,10 +68,22 @@ public class Pokemon {
     }
 
     public String datospokemon() {
-        return "Nombre: " + name + "\nNúmero en Pokédex: " + numeroPokedex +
-                "\nTipo 1: " + type1 + (type2 != null ? "\nTipo 2: " + type2 : "") +
-                "\nClasificación: " + classification + "\nAltura: " + height +
-                "\nPeso: " + weight + "\nHabilidades: " + String.join(", ", abilities) +
-                "\nGeneración: " + generation + "\nLegendario: " + (legendario ? "Sí" : "No");
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nombre: ").append(name).append("\n");
+        sb.append("Número en Pokédex: ").append(numeroPokedex).append("\n");
+        sb.append("Tipo 1: ").append(type1).append("\n");
+        
+        if (type2 != null && !type2.isEmpty()) {
+            sb.append("Tipo 2: ").append(type2).append("\n");
+        }
+        
+        sb.append("Clasificación: ").append(classification).append("\n");
+        sb.append("Altura: ").append(height).append("\n");
+        sb.append("Peso: ").append(weight).append("\n");
+        sb.append("Habilidades: ").append(String.join(", ", abilities)).append("\n");
+        sb.append("Generación: ").append(generation).append("\n");
+        sb.append("Legendario: ").append(legendario ? "Sí" : "No");
+        
+        return sb.toString();
     }
 }
