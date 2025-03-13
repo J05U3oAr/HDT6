@@ -1,3 +1,5 @@
+package MiProyecto.src.main.java.com.miempresa;
+
 import java.util.*;
 import java.io.File;
 
@@ -10,7 +12,7 @@ public class Main {
         Map<String, Pokemon> userCollection = new HashMap<>();
 
         // Ruta al archivo CSV
-        String filePath = "pokemon_data_pokeapi.csv";
+        String filePath = "C:\\Users\\Arodi Josué Chávez R\\Desktop\\Archivos Universidad\\Tercer semestre\\Estructura de datos\\HDT-6\\HDT6\\MiProyecto\\src\\main\\java\\resources\\Datos.csv";
         File file = new File(filePath);
         
         // Verificar si el archivo existe
@@ -30,7 +32,7 @@ public class Main {
         }
         
         System.out.println("Pokémon cargados en el sistema: " + allPokemons.size());
-        System.out.println("Primeros 5 Pokémon disponibles:");
+        System.out.println("Pokemones que se dan al iniciar:");
         int count = 0;
         for (String key : allPokemons.keySet()) {
             if (count < 5) {

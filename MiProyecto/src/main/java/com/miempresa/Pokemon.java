@@ -1,3 +1,5 @@
+package MiProyecto.src.main.java.com.miempresa;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Collections;
